@@ -14,52 +14,63 @@ import React from "react";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Input } from "./ui/input";
-import { Card } from "./ui/card";
-import { DatePicker } from "@mui/x-date-pickers";
-import SelectUSState from 'react-select-us-states'; 
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "./ui/card";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { cn } from "@/lib/utils";
+import { ArrowRight } from "lucide-react";
+
 
 type Props = {};
 
 const formSchema = z.object({
-  firstname: z.string().max(25),
-  lastname: z.string().max(25),
-  location: z.string().min(3).max(25),
+  firstname: z.string().min(3).max(25),
+  lastname: z.string().min(3).max(25),
+  state: z.string().max(25),
   email: z.string().email(),
-  dob: z.string(),
-  phone: z.string().min(10).max(10),
-  health: z.string().min(3).max(25),
-  meds: z.string().min(3).max(25),
+  age: z.string().min(0).max(2),
+  phone: z.string().max(11),
+  health: z.string(),
+  meds: z.string(),
   contribution: z.string().min(0).max(10000000000),
-  years: z.string().min(0),
   retirement: z.string().min(0),
 });
 
+type Input = z.infer<typeof formSchema>;
+
 const LeadForm = (props: Props) => {
-  const form = useForm<z.infer<typeof formSchema>>({
+  const [formStep, setFormStep] = React.useState(0);
+  const form = useForm<Input>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-        firstname: "",
-        lastname: "",
-        location: "",
-        dob: "",
-        email: "",
-        phone: "",
-        health: "",
-        meds: "",
-        contribution: "",
-        years: "",
-        retirement: "",
-    }
+      firstname: "",
+      lastname: "",
+      state: "",
+      age: "",
+      email: "",
+      phone: "",
+      health: "",
+      meds: "",
+      contribution: "",
+      retirement: "",
+    },
   });
 
-  const onSubmit = (values: z.infer<typeof formSchema>) => {
-    console.log(values)
+  function onSubmit(data: Input) {
+    console.log("data", data);
   }
 
   return (
-    <Card className="w-[400px]">
+    <div>
+    <Card className="w-[350px]">
+      <CardHeader>
+        <CardTitle>Enter your info</CardTitle>
+      </CardHeader>
+      <CardContent>
+    
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <div className={cn("space-y-8", { hidden: formStep == 1 })}>
+        {/* Firstname */}
         <FormField
           control={form.control}
           name="firstname"
@@ -69,13 +80,12 @@ const LeadForm = (props: Props) => {
               <FormControl>
                 <Input placeholder="First Name" {...field} />
               </FormControl>
-              <FormDescription>
-                Please enter your first name.
-              </FormDescription>
+              <FormDescription>Please enter your first name.</FormDescription>
               <FormMessage />
             </FormItem>
           )}
         />
+        {/* Lastname */}
         <FormField
           control={form.control}
           name="lastname"
@@ -85,31 +95,29 @@ const LeadForm = (props: Props) => {
               <FormControl>
                 <Input placeholder="Last Name" {...field} />
               </FormControl>
-              <FormDescription>
-                Please enter your last name.
-              </FormDescription>
+              <FormDescription>Please enter your last name.</FormDescription>
               <FormMessage />
             </FormItem>
           )}
         />
+        {/* State */}
         <FormField
           control={form.control}
-          name="phone"
+          name="state"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>State</FormLabel>
+              <FormLabel>State of Residence</FormLabel>
               <FormControl>
-              <p>
-        <SelectUSState id="myId" className="myClassName" onChange={(e: any) => console.log(e.target.value)}/>
-      </p>
+                <Input placeholder="State" {...field} />
               </FormControl>
               <FormDescription>
-                Please select your state.
+                Please enter the state you live in.
               </FormDescription>
               <FormMessage />
             </FormItem>
           )}
         />
+        {/* Phone # */}
         <FormField
           control={form.control}
           name="phone"
@@ -117,138 +125,162 @@ const LeadForm = (props: Props) => {
             <FormItem>
               <FormLabel>Phone Number</FormLabel>
               <FormControl>
-              <Input placeholder="phone" {...field}/>
+                <Input placeholder="phone" {...field} />
               </FormControl>
-              <FormDescription>
-                Please enter your phone number
-              </FormDescription>
+              <FormDescription>Please enter your phone number</FormDescription>
               <FormMessage />
             </FormItem>
           )}
         />
+        {/* Email */}
         <FormField
           control={form.control}
           name="email"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>email</FormLabel>
+              <FormLabel>Email</FormLabel>
               <FormControl>
                 <Input placeholder="email" {...field} />
               </FormControl>
-              <FormDescription>
-                Please enter your email.
-              </FormDescription>
+              <FormDescription>Please enter your email.</FormDescription>
               <FormMessage />
             </FormItem>
           )}
         />
-
-        <FormField 
+        </div>
+        <div className={cn('space-y-6', {
+          hidden: formStep == 0
+        })}>
+        {/* Age */}
+        <FormField
           control={form.control}
-            name="dob"
+          name="age"
           render={({ field }) => (
-            
             <FormItem>
-                <div className="flex flex-col">
-              <FormLabel className="pb-3">dob</FormLabel>
+              <FormLabel>Age</FormLabel>
               <FormControl>
-                <DatePicker />
-                
+                <Input placeholder="age" {...field} />
               </FormControl>
-              <FormDescription className="pt-2">
-                Please enter your dob.
+              <FormDescription>
+                Please enter your age.
               </FormDescription>
               <FormMessage />
-              </div>
             </FormItem>
           )}
         />
+        {/* Health */}
         <FormField
           control={form.control}
           name="health"
           render={({ field }) => (
-            <FormItem>
-              <FormLabel>health</FormLabel>
+            <FormItem className="space-y-3">
+              <FormLabel>My health is...</FormLabel>
               <FormControl>
-                <Input placeholder="health" {...field} />
+                <RadioGroup
+                  onValueChange={field.onChange}
+                  defaultValue={field.value}
+                  className="flex flex-col space-y-1"
+                >
+                  <FormItem className="flex items-center space-x-3 space-y-0">
+                    <FormControl>
+                      <RadioGroupItem value="poor" />
+                    </FormControl>
+                    <FormLabel className="font-normal">
+                      Poor
+                    </FormLabel>
+                  </FormItem>
+                  <FormItem className="flex items-center space-x-3 space-y-0">
+                    <FormControl>
+                      <RadioGroupItem value="fair" />
+                    </FormControl>
+                    <FormLabel className="font-normal">
+                      Fair
+                    </FormLabel>
+                  </FormItem>
+                  <FormItem className="flex items-center space-x-3 space-y-0">
+                    <FormControl>
+                      <RadioGroupItem value="excellent" />
+                    </FormControl>
+                    <FormLabel className="font-normal">Excellent</FormLabel>
+                  </FormItem>
+                </RadioGroup>
               </FormControl>
-              <FormDescription>
-                Please enter your health.
-              </FormDescription>
               <FormMessage />
             </FormItem>
           )}
         />
+        {/* Meds */}
         <FormField
           control={form.control}
           name="meds"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>meds</FormLabel>
+              <FormLabel>
+                How many medications are you currently taking?
+              </FormLabel>
               <FormControl>
-                <Input placeholder="meds" {...field} />
+                <Input
+                  placeholder="0"
+                  {...field}
+                  type="number"
+                  min={0}
+                  max={10}
+                />
               </FormControl>
-              <FormDescription>
-                Please enter your meds.
-              </FormDescription>
+              <FormDescription>Please enter a number.</FormDescription>
               <FormMessage />
             </FormItem>
           )}
         />
+        {/* Contribution */}
         <FormField
           control={form.control}
           name="contribution"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>contribution</FormLabel>
+              <FormLabel>
+                How much money do you want to contribute in to your policy each
+                month?
+              </FormLabel>
               <FormControl>
-                <Input placeholder="contribution" {...field} />
+                <Input placeholder="Monthly contribution" {...field} />
               </FormControl>
               <FormDescription>
-                Please enter your contribution.
+                Please enter your desired monthly contribution in USD.
               </FormDescription>
               <FormMessage />
             </FormItem>
           )}
         />
-        <FormField
-          control={form.control}
-          name="years"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>years</FormLabel>
-              <FormControl>
-                <Input placeholder="years" {...field} />
-              </FormControl>
-              <FormDescription>
-                Please enter your years.
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        {/* Retirement */}
         <FormField
           control={form.control}
           name="retirement"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>retirement</FormLabel>
+              <FormLabel>At what age do you plan on retiring?</FormLabel>
               <FormControl>
-                <Input placeholder="retirement" {...field} 
-                />
-
+                <Input placeholder="Retirement age" {...field} />
               </FormControl>
               <FormDescription>
-                Please enter your retirement.
+                Please enter your desired retirement age.
               </FormDescription>
               <FormMessage />
             </FormItem>
           )}
         />
-        <Button type="submit">Submit</Button>
+        </div>
+<div className="flex gap-2">
+<Button type="submit">Submit</Button>
+<Button type="button" className="pr-5" variant={"ghost"} onClick={() => setFormStep(1)}>Next Step
+<ArrowRight className="ml-2 w-5 h-5"/>
+</Button>
+</div>
       </form>
     </Form>
+    </CardContent>
     </Card>
+    </div>
   );
 };
 
